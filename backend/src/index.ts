@@ -1,11 +1,12 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { createServer } from 'http';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import apiRoutes from './routes/apiRoutes.js';
-import { errorHandler } from './middleware/errorHandler.js';
-import { SocketService } from './services/socketService.js';
-import prisma from './config/db.js';
+// 💡 Fixed: Removed the manual '.js' extensions from your internal imports
+import apiRoutes from './routes/apiRoutes'; 
+import { errorHandler } from './middleware/errorHandler';
+import { SocketService } from './services/socketService';
+import prisma from './config/db';
 
 dotenv.config();
 
@@ -24,14 +25,16 @@ app.use(express.urlencoded({ extended: true }));
 
 // Log request URLs in dev mode
 if (process.env.NODE_ENV !== 'production') {
-  app.use((req, res, next) => {
+  // 💡 Fixed: Explicitly typed middleware arguments to resolve Issue 4
+  app.use((req: Request, res: Response, next: NextFunction) => {
     console.log(`📡 [API]: ${req.method} request received at ${req.url}`);
     next();
   });
 }
 
 // Health Check Route
-app.get('/health', async (req, res) => {
+// 💡 Fixed: Explicitly typed route handlers
+app.get('/health', async (req: Request, res: Response) => {
   try {
     // Basic ping to DB
     await prisma.$queryRaw`SELECT 1`;

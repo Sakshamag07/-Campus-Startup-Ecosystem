@@ -22,7 +22,7 @@ export class AIController {
       const analysis = await AIService.validateIdea(ideaText);
 
       // Save database log
-      const log = await prisma.aiValidatorResult.create({
+      const log = await prisma.aIValidatorResult.create({
         data: {
           userId,
           ideaText,
