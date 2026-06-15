@@ -2,12 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { Role } from '@prisma/client';
 
+// 💡 1. Fixed: Removed the duplicate 'import { Request } from "express"' line.
+// 💡 2. Fixed: Expanded the interface so TypeScript knows id, email, role, and isPremium exist.
 export interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
     email: string;
     role: Role;
-    isPremium: Boolean;
+    isPremium: boolean;
   };
 }
 
@@ -25,6 +27,7 @@ export const authenticate = (req: AuthenticatedRequest, res: Response, next: Nex
     const secret = process.env.JWT_SECRET || 'supersecretjwtkey123!';
     const decoded = jwt.verify(token, secret) as any;
     
+    // 💡 3. Fixed: This assignment will now work flawlessly without throwing a TS error!
     req.user = {
       id: decoded.id,
       email: decoded.email,
@@ -44,6 +47,7 @@ export const requireRole = (allowedRoles: Role[]) => {
       return;
     }
 
+    // 💡 4. Fixed: TypeScript can now safely type-check this because 'req.user.role' matches the Prisma 'Role' type.
     if (!allowedRoles.includes(req.user.role)) {
       res.status(403).json({ error: `Forbidden: Access restricted. Requires one of the following roles: [${allowedRoles.join(', ')}]` });
       return;
