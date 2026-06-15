@@ -289,18 +289,19 @@ export default function Home() {
     }));
   };
 
-  // Calculator compatibility
+  // Fixed matching calculation compatibility block
   const calculateMatchScore = (profA: any, profB: any) => {
     let score = 55;
-    const skillsA = new Set(profA.skills.map((s: string) => s.toLowerCase()));
+    
+    const skillsA = profA.skills.map((s: string) => s.toLowerCase());
     const skillsB = new Set(profB.skills.map((s: string) => s.toLowerCase()));
-    const intersection = [...skillsA].filter(x => skillsB.has(x));
+    const intersection = skillsA.filter((x: string) => skillsB.has(x));
 
     score += Math.min(intersection.length * 8, 20);
 
-    const intA = new Set(profA.interests.map((i: string) => i.toLowerCase()));
+    const intA = profA.interests.map((i: string) => i.toLowerCase());
     const intB = new Set(profB.interests.map((i: string) => i.toLowerCase()));
-    const sharedInt = [...intA].filter(x => intB.has(x));
+    const sharedInt = intA.filter((x: string) => intB.has(x));
 
     score += Math.min(sharedInt.length * 10, 20);
 
@@ -1241,4 +1242,4 @@ export default function Home() {
 
     </div>
   );
-} 
+}
