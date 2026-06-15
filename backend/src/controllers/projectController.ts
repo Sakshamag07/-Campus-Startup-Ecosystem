@@ -3,7 +3,7 @@ import prisma from '../config/db.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { SocketService } from '../services/socketService.js';
 import { AIService } from '../services/aiService.js';
-import { ApplicationStatus } from '@prisma/client';
+import { ApplicationStatus, ChatRoomType } from '@prisma/client';
 
 export class ProjectController {
   // ==========================================
@@ -43,7 +43,8 @@ export class ProjectController {
 
   static async getPublicProfile(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { userId } = req.params;
+      // Fixed: Explicit type casting for route param string mapping
+      const userId = req.params.userId as string;
       const profile = await prisma.profile.findUnique({
         where: { userId },
         include: { user: { select: { email: true, role: true, isPremium: true } } },
@@ -72,7 +73,8 @@ export class ProjectController {
         filters.interests = { has: interest as string };
       }
       if (availability) {
-        filters.availability = availability;
+        // Fixed: Cast query parameter to string
+        filters.availability = availability as string;
       }
 
       const profiles = await prisma.profile.findMany({
@@ -152,11 +154,11 @@ export class ProjectController {
           }
         }
 
-        // Auto-create chat room for project team
+        // Auto-create chat room for project team (Fixed: Using proper type safety enum mapping)
         await tx.chatRoom.create({
           data: {
             name: `${title} Team Room`,
-            type: 'TEAM',
+            type: ChatRoomType.TEAM,
             projectId: newProj.id,
             members: {
               create: [{ userId: creatorId }]
@@ -199,7 +201,8 @@ export class ProjectController {
 
   static async getProjectDetails(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      // Fixed: Explicit type casting for path param
+      const id = req.params.id as string;
       const project = await prisma.project.findUnique({
         where: { id },
         include: {
@@ -224,7 +227,8 @@ export class ProjectController {
 
   static async updateProject(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      // Fixed: Explicit type casting for path param
+      const id = req.params.id as string;
       const userId = req.user?.id;
       const { title, tagline, description, domain, status, logoUrl, pitchDeckUrl } = req.body;
 
@@ -317,7 +321,8 @@ export class ProjectController {
 
   static async getProjectApplications(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { projectId } = req.params;
+      // Fixed: Explicit type casting for path param
+      const projectId = req.params.projectId as string;
       const userId = req.user?.id;
 
       const project = await prisma.project.findUnique({ where: { id: projectId } });
@@ -349,11 +354,13 @@ export class ProjectController {
 
   static async updateApplicationStatus(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { id } = req.params;
+      // Fixed: Explicit type casting for path param
+      const id = req.params.id as string;
       const { status } = req.body; // ACCEPTED or REJECTED
       const userId = req.user?.id;
 
-      if (!status || !Object.values(ApplicationStatus).includes(status)) {
+      // Fixed: Typecast check array value to avoid comparison mismatch warnings
+      if (!status || !Object.values(ApplicationStatus).includes(status as any)) {
         res.status(400).json({ error: 'Valid status is required (ACCEPTED/REJECTED).' });
         return;
       }
@@ -391,7 +398,7 @@ export class ProjectController {
 
           // Join active chat channel
           const chatRoom = await tx.chatRoom.findFirst({
-            where: { projectId: application.projectId, type: 'TEAM' },
+            where: { projectId: application.projectId, type: ChatRoomType.TEAM },
           });
 
           if (chatRoom) {

@@ -52,7 +52,8 @@ export class ChatController {
    */
   static async getRoomMessages(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { roomId } = req.params;
+      // Fixed: Explicitly typed to resolve string | string[] discrepancy 
+      const roomId = req.params.roomId as string;
       const userId = req.user?.id!;
 
       // Verify user is member of room

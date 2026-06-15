@@ -125,7 +125,8 @@ export class MentorController {
 
   static async submitReview(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { sessionId } = req.params;
+      // Fixed: Explicit type casting prevents string | string[] type mismatches across lines 138 and 148
+      const sessionId = req.params.sessionId as string;
       const { rating, reviewText } = req.body;
       const studentId = req.user?.id;
 

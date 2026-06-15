@@ -21,7 +21,7 @@ export class AIController {
       // Run analysis
       const analysis = await AIService.validateIdea(ideaText);
 
-      // Save database log
+      // Save database log - Fixed casing to match Prisma schema
       const log = await prisma.aIValidatorResult.create({
         data: {
           userId,
@@ -47,7 +47,8 @@ export class AIController {
   static async getPastValidations(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user?.id;
-      const history = await prisma.aiValidatorResult.findMany({
+      // Fixed casing to match Prisma schema
+      const history = await prisma.aIValidatorResult.findMany({
         where: { userId },
         orderBy: { createdAt: 'desc' },
       });
@@ -82,7 +83,8 @@ export class AIController {
    */
   static async getProjectTeamHealth(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { projectId } = req.params;
+      // Fixed: Explicit type casting prevents string | string[] compilation errors
+      const projectId = req.params.projectId as string;
       const userId = req.user?.id;
 
       const project = await prisma.project.findUnique({ where: { id: projectId } });
