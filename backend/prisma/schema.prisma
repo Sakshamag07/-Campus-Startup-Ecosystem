@@ -1,0 +1,388 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  STUDENT
+  FOUNDER
+  MENTOR
+  INVESTOR
+  COLLEGE_ADMIN
+  SUPER_ADMIN
+}
+
+enum Availability {
+  PART_TIME
+  FULL_TIME
+  NOT_AVAILABLE
+}
+
+enum ProjectStatus {
+  IDEA
+  DEVELOPMENT
+  LAUNCHED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum SessionStatus {
+  BOOKED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum PaymentType {
+  SUBSCRIPTION
+  MENTOR_SESSION
+  PREMIUM_BADGE
+}
+
+enum LocationType {
+  REMOTE
+  HYBRID
+  ONSITE
+}
+
+enum ChatRoomType {
+  DIRECT
+  GROUP
+  TEAM
+}
+
+enum NotificationType {
+  MATCH
+  APPLICATION
+  MESSAGE
+  SESSION
+  SYSTEM
+}
+
+model User {
+  id                   String            @id @default(uuid())
+  email                String            @unique
+  passwordHash         String
+  role                 Role              @default(STUDENT)
+  isVerified           Boolean           @default(false)
+  verificationToken    String?
+  resetToken           String?
+  resetTokenExpires    DateTime?
+  refreshToken         String?
+  googleId             String?           @unique
+  isPremium            Boolean           @default(false)
+  premiumExpiry        DateTime?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  // Relations
+  profile              Profile?
+  projectsCreated      Project[]         @relation("ProjectCreator")
+  projectMemberships   ProjectMember[]
+  applications         Application[]     @relation("Applicant")
+  projectUpdates       ProjectUpdate[]
+  connectionsSent      Connection[]      @relation("Requester")
+  connectionsReceived  Connection[]      @relation("Receiver")
+  mentorProfile        MentorProfile?
+  sessionsBooked       MentorSession[]   @relation("StudentSession")
+  hackathonsCreated    Hackathon[]       @relation("HackathonCreator")
+  hackathonTeams       HackathonTeam[]   @relation("TeamLeader")
+  chatMemberships      ChatMember[]
+  messages             Message[]
+  notifications        Notification[]
+  payments             Payment[]
+  aiValidatorResults   AIValidatorResult[]
+}
+
+model Profile {
+  id                String       @id @default(uuid())
+  userId            String       @unique
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name              String
+  avatar            String?
+  bio               String?
+  headline          String?
+  skills            String[]     // E.g., ["React", "Node.js", "Python"]
+  interests         String[]     // E.g., ["Fintech", "SaaS", "AI"]
+  availability      Availability @default(FULL_TIME)
+  github            String?
+  linkedin          String?
+  portfolio         String?
+  resumeUrl         String?
+  startupIdea       String?
+  personalityTraits String[]     // E.g., ["Visionary", "Analytical", "Executor"]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model Project {
+  id             String          @id @default(uuid())
+  creatorId      String
+  creator        User            @relation("ProjectCreator", fields: [creatorId], references: [id])
+  title          String
+  tagline        String
+  description    String
+  domain         String          // E.g., "EdTech", "Web3"
+  status         ProjectStatus   @default(IDEA)
+  logoUrl        String?
+  pitchDeckUrl   String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  // Relations
+  members        ProjectMember[]
+  roles          ProjectRole[]
+  applications   Application[]
+  milestones     Milestone[]
+  updates        ProjectUpdate[]
+  internships    Internship[]
+  chatRooms      ChatRoom[]
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleName  String   // E.g. "Lead Developer", "Marketing Head"
+  joinedAt  DateTime @default(now())
+
+  @@unique([projectId, userId])
+}
+
+model ProjectRole {
+  id             String         @id @default(uuid())
+  projectId      String
+  project        Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title          String         // E.g. "Frontend Engineer"
+  description    String
+  skillsRequired String[]
+  isFilled       Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  applications   Application[]
+}
+
+model Application {
+  id            String            @id @default(uuid())
+  projectId     String
+  project       Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  roleId        String?
+  role          ProjectRole?      @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  internshipId  String?
+  internship    Internship?       @relation(fields: [internshipId], references: [id], onDelete: SetNull)
+  applicantId   String
+  applicant     User              @relation("Applicant", fields: [applicantId], references: [id], onDelete: Cascade)
+  coverLetter   String?
+  resumeUrl     String?
+  status        ApplicationStatus @default(PENDING)
+  aiScore       Int?              // 0-100 rating generated by AI
+  aiAnalysis    Json?             // JSON containing fit analysis and suggested improvements
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model Milestone {
+  id          String   @id @default(uuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  dueDate     DateTime
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ProjectUpdate {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title     String
+  content   String
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Connection {
+  id                 String            @id @default(uuid())
+  requesterId        String
+  requester          User              @relation("Requester", fields: [requesterId], references: [id], onDelete: Cascade)
+  receiverId         String
+  receiver           User              @relation("Receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  status             ApplicationStatus @default(PENDING)
+  compatibilityScore Int?              // Calculated by matching engine
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@unique([requesterId, receiverId])
+}
+
+model MentorProfile {
+  id                  String          @id @default(uuid())
+  userId              String          @unique
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expertise           String[]
+  bio                 String
+  hourlyRate          Float           @default(0.0)
+  rating              Float           @default(5.0)
+  sessionsCount       Int             @default(0)
+  availabilityWindow  Json            // Availability hours mapping
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  sessions            MentorSession[]
+}
+
+model MentorSession {
+  id              String        @id @default(uuid())
+  mentorId        String
+  mentor          MentorProfile @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  studentId       String
+  student         User          @relation("StudentSession", fields: [studentId], references: [id], onDelete: Cascade)
+  scheduledAt     DateTime
+  durationMinutes Int           @default(60)
+  status          SessionStatus @default(BOOKED)
+  meetingLink     String?
+  reviewRating    Int?
+  reviewText      String?
+  paymentId       String?       @unique
+  payment         Payment?      @relation("SessionPayment", fields: [paymentId], references: [id])
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Internship {
+  id           String        @id @default(uuid())
+  projectId    String
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title        String
+  description  String
+  requirements String[]
+  stipend      Float?
+  duration     Int?          // in months
+  location     LocationType  @default(REMOTE)
+  isClosed     Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  applications Application[]
+}
+
+model Hackathon {
+  id                 String          @id @default(uuid())
+  creatorId          String
+  creator            User            @relation("HackathonCreator", fields: [creatorId], references: [id])
+  title              String
+  description        String
+  rules              String?
+  startDate          DateTime
+  endDate            DateTime
+  submissionDeadline DateTime
+  prizePool          String?
+  createdAt          DateTime        @default(now())
+  teams              HackathonTeam[]
+}
+
+model HackathonTeam {
+  id             String    @id @default(uuid())
+  hackathonId    String
+  hackathon      Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  name           String
+  leaderId       String
+  leader         User      @relation("TeamLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  members        String[]  // Array of user email strings
+  submissionUrl  String?
+  submissionDesc String?
+  score          Int?
+  rank           Int?
+  createdAt      DateTime  @default(now())
+}
+
+model ChatRoom {
+  id        String       @id @default(uuid())
+  name      String?
+  type      ChatRoomType @default(DIRECT)
+  projectId String?
+  project   Project?     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  members   ChatMember[]
+  messages  Message[]
+}
+
+model ChatMember {
+  id       String   @id @default(uuid())
+  roomId   String
+  room     ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt DateTime @default(now())
+
+  @@unique([roomId, userId])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  roomId    String
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  content   String
+  fileUrl   String?
+  fileType  String?  // E.g., "image/png", "application/pdf"
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  content   String
+  type      NotificationType @default(SYSTEM)
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+}
+
+model Payment {
+  id                 String        @id @default(uuid())
+  userId             String
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount             Float
+  currency           String        @default("INR")
+  status             PaymentStatus @default(PENDING)
+  type               PaymentType
+  providerPaymentId  String?       @unique // Razorpay payment ID
+  providerOrderId    String        @unique // Razorpay order ID
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  mentorSession      MentorSession? @relation("SessionPayment")
+}
+
+model AIValidatorResult {
+  id                 String   @id @default(uuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ideaText           String
+  marketAnalysis     Json
+  competitorAnalysis Json
+  swotAnalysis       Json
+  revenueModel       Json
+  risks              Json
+  growthOpportunities Json
+  createdAt          DateTime @default(now())
+}

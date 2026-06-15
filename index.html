@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Startup Ecosystem | Startiva</title>
+    <meta name="description" content="Connect with co-founders, post startup projects, book session with mentors, and validate ideas using AI.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="./src/style.css">
+</head>
+<body class="bg-dark text-main">
+    <div class="loader-wrapper">
+        <div class="loader">STARTIVA</div>
+    </div>
+
+    <!-- App Container -->
+    <div id="app" class="app-layout" style="display: none;">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <i class="fa-solid fa-rocket icon-primary"></i>
+                <span>STARTIVA</span>
+            </div>
+
+            <nav class="sidebar-menu">
+                <button class="menu-item active" data-tab="dashboard">
+                    <i class="fa-solid fa-compass"></i> Dashboard
+                </button>
+                <button class="menu-item" data-tab="cofounder">
+                    <i class="fa-solid fa-users"></i> Co-Founder Finder
+                </button>
+                <button class="menu-item" data-tab="projects">
+                    <i class="fa-solid fa-layer-group"></i> Projects Hub
+                </button>
+                <button class="menu-item" data-tab="mentors">
+                    <i class="fa-solid fa-graduation-cap"></i> Mentorship
+                </button>
+                <button class="menu-item" data-tab="internships">
+                    <i class="fa-solid fa-briefcase"></i> Internships
+                </button>
+                <button class="menu-item" data-tab="chat">
+                    <i class="fa-solid fa-message"></i> Chat Channels
+                </button>
+                <button class="menu-item" data-tab="ai">
+                    <i class="fa-solid fa-microchip"></i> AI Assistant
+                </button>
+                <button class="menu-item" data-tab="profile">
+                    <i class="fa-solid fa-user"></i> My Profile
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-badge">
+                    <img id="user-avatar" src="https://ui-avatars.com/api/?name=Jane+Doe&background=6366F1&color=fff" alt="Avatar">
+                    <div class="user-badge-info">
+                        <h4 id="user-name">Jane Doe</h4>
+                        <p id="user-role-label">STUDENT <span class="premium-tag" style="display: none;">PRO</span></p>
+                    </div>
+                </div>
+                <button class="btn-logout" id="logout-btn">
+                    <i class="fa-solid fa-sign-out"></i> Sign Out
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Header bar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <h2 id="view-title" class="view-title">Dashboard</h2>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn-premium" id="go-premium-btn">
+                        <i class="fa-solid fa-sparkles"></i> Go Premium
+                    </button>
+                    
+                    <div class="notification-bell">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="bell-badge" id="notif-count">2</span>
+                        <div class="notif-dropdown" id="notif-list">
+                            <h4>Notifications</h4>
+                            <div class="notif-items" id="notif-items-container">
+                                <!-- Notifs injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="header-divider"></div>
+                    <span class="domain-tag">Domain: <strong>Campus Hub</strong></span>
+                </div>
+            </header>
+
+            <!-- Active View viewport -->
+            <div class="viewport" id="viewport">
+                <!-- Views will be dynamically swapped here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Login / Registration Form overlay -->
+    <div id="auth-screen" class="auth-layout">
+        <div class="auth-card glass-panel">
+            <div class="auth-header">
+                <h1 class="auth-title"><i class="fa-solid fa-rocket icon-primary"></i> STARTIVA</h1>
+                <p>From Idea to Startup - Campus Ecosystem</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-signin-btn">Sign In</button>
+                <button class="auth-tab" id="tab-signup-btn">Create Account</button>
+            </div>
+
+            <form id="auth-form" class="auth-form">
+                <div class="form-group" id="group-name" style="display: none;">
+                    <label>Full Name</label>
+                    <input type="text" id="auth-name" placeholder="e.g. Jane Doe">
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="auth-email" required placeholder="college_email@edu.in">
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="auth-password" required placeholder="••••••••">
+                </div>
+
+                <div class="form-group" id="group-role" style="display: none;">
+                    <label>Primary Role</label>
+                    <select id="auth-role">
+                        <option value="STUDENT">Student</option>
+                        <option value="FOUNDER">Startup Founder</option>
+                        <option value="MENTOR">Mentor</option>
+                        <option value="INVESTOR">Investor</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100" id="auth-submit-btn">Sign In</button>
+            </form>
+
+            <div class="auth-social">
+                <span>Or sign in with</span>
+                <div class="social-grid">
+                    <button class="btn-social" id="social-google"><i class="fa-brands fa-google color-red"></i> Google</button>
+                    <button class="btn-social" id="social-github"><i class="fa-brands fa-github"></i> GitHub</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+          MODALS
+          ========================================== -->
+    
+    <!-- Apply to Project Modal -->
+    <div class="modal" id="apply-modal">
+        <div class="modal-card">
+            <button class="modal-close" data-close="apply-modal"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="modal-title font-heading" id="apply-project-title">Apply to Project</h3>
+            <p class="modal-subtitle">Send your developer profile to the founder. Compatibility matching rates are run automatically.</p>
+            
+            <div class="modal-body space-y-4">
+                <div class="form-group">
+                    <label>Cover Letter</label>
+                    <textarea id="apply-letter" rows="4" placeholder="Explain why you want to join and how your skills align..."></textarea>
+                </div>
+                <div class="attachment-box">
+                    <i class="fa-solid fa-paperclip"></i> Attached Resume: <strong>Jane_Doe_Resume.pdf</strong>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-outline" data-close="apply-modal">Cancel</button>
+                    <button class="btn btn-primary" id="submit-application-btn">Submit Application</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Book Mentor Session Modal -->
+    <div class="modal" id="book-mentor-modal">
+        <div class="modal-card">
+            <button class="modal-close" data-close="book-mentor-modal"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="modal-title font-heading" id="book-mentor-title">Schedule Mentorship</h3>
+            <p class="modal-subtitle" id="book-mentor-subtitle">Book 1 hour with mentor.</p>
+            
+            <form id="book-mentor-form" class="modal-body space-y-4">
+                <div class="form-group">
+                    <label>Select Date</label>
+                    <input type="date" id="book-date" required>
+                </div>
+                <div class="form-group">
+                    <label>Select Time</label>
+                    <input type="time" id="book-time" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" data-close="book-mentor-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="pay-mentor-btn">Proceed to Pay</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Razorpay Checkout Modal Simulator -->
+    <div class="modal" id="razorpay-modal">
+        <div class="checkout-card">
+            <div class="checkout-header">
+                <div>
+                    <h4 class="checkout-subtitle">RAZORPAY CHECKOUT</h4>
+                    <h3 class="checkout-title" id="checkout-plan-name">Startiva Pro Plan</h3>
+                </div>
+                <button class="checkout-close" data-close="razorpay-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="checkout-body space-y-6">
+                <div class="checkout-row">
+                    <span>Plan Type:</span>
+                    <span id="checkout-row-plan" class="font-bold text-white">-</span>
+                </div>
+                <div class="checkout-row">
+                    <span>Amount Due:</span>
+                    <span id="checkout-row-amount" class="text-primary font-black">₹1,999.00</span>
+                </div>
+                <div class="checkout-info">
+                    <i class="fa-solid fa-info-circle"></i> This is a simulated Razorpay sandboxed billing transaction. Click 'Confirm Payment' to complete.
+                </div>
+                <button class="btn btn-primary w-100" id="confirm-payment-btn">Confirm Payment (Sandbox)</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+</body>
+</html>
