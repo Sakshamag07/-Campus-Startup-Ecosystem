@@ -15,9 +15,14 @@ const server = createServer(app);
 const PORT = process.env.PORT || 5000;
 
 // Setup Middleware
+// Setup Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: [
+    'https://campus-startup-ecosystem-jjen.vercel.app', // Your live Vercel frontend
+    'http://localhost:3000'                              // Local development support
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
 app.use(express.json());
