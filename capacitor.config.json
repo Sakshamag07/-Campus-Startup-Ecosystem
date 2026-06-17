@@ -1,5 +1,9 @@
 {
   "appId": "com.startiva.app",
   "appName": "Startiva",
-  "webDir": "dist"
+  "webDir": "frontend/out",
+  "server": {
+    "url": "https://campus-startup-ecosystem-jjen.vercel.app",
+    "cleartext": true
+  }
 }
