@@ -1,0 +1,7 @@
+[33mcommit 68d383597467e9a166e525325266a5e9a08fc0e4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author:     Sakshamag07 <sakshama072@email.com>
+AuthorDate: Wed Jun 17 22:07:37 2026 +0530
+Commit:     Sakshamag07 <sakshama072@email.com>
+CommitDate: Wed Jun 17 22:07:37 2026 +0530
+
+    fix: downgrade AGP and Gradle versions to fix Android Studio sync error
